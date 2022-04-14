@@ -1,0 +1,21 @@
+
+The definition file contains the following lines, in any order.
+The lines will be read completely before doing any work.
+
+Each line is a sequence of fields, separated by whitespace. Fields
+will be separated by split(), so there can be no embedded white space
+within a field.
+
+Lines started with '#' are comments and wil be ignored.
+
+The first field defines the format of the rest of the line. The various
+line formats are below:
+
+table <table name>
+primary_key <column>...
+
+# There should be one 'col' line for each CSV field. It defines the
+# type of the column ('i' => int, 's' => string) and the name of
+# the column in the SQL table:
+
+col <number> <type> <SQL column name>
