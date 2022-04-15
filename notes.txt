@@ -6,6 +6,7 @@ Each line is a sequence of fields, separated by whitespace. Fields
 will be separated by split(), so there can be no embedded white space
 within a field.
 
+Blank lines are ignored.
 Lines started with '#' are comments and wil be ignored.
 
 The first field defines the format of the rest of the line. The various
