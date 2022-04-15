@@ -65,7 +65,9 @@ def create_table(defn_file: str) -> None:
         print('create table:', defn_file)
     with open(defn_file, 'r') as f:
         defn = parse_defn_file(f)
-        print(defn)
+        if g.debug:
+            print(defn)
+        print_sql_stmt(defn)
 
 
 def load_table(defn_file: str, csv_file: str) -> None:
@@ -95,8 +97,23 @@ def parse_defn_file(defn_file: TextIO) -> Defn:
             cols.append(col)
         else:
             assert False
+    assert defn.table_name != ''
+    assert defn.primary_key != ''
     defn.cols = cols
+    assert len(defn.cols) > 0
     return defn
+
+
+def print_sql_stmt(defn: Defn) -> None:
+    c_str = f'create table {defn.table_name} (\n'
+    key = f',\n  primary key {defn.primary_key}\n'
+    cols = []
+    for col in defn.cols:
+        s = f'  {col.name} {col._type}'
+        cols.append(s)
+    col_str = ',\n'.join(cols)
+    stmt = c_str + col_str + key + ');'
+    print(stmt)
 
 
 if __name__ == '__main__':
