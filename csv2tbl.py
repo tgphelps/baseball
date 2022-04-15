@@ -26,7 +26,6 @@ VERSION = 0.01
 
 class Globals:
     debug: bool
-    has_header: bool
 
 
 @dataclass
@@ -39,7 +38,7 @@ class Col:
 @dataclass
 class Defn:
     table_name: str
-    primary_key: str
+    primary_key: list[str]
     cols: list[Col]
 
 
@@ -49,13 +48,13 @@ g = Globals()
 def main() -> None:
     args = docopt.docopt(__doc__, version=VERSION)
     g.debug = args['--debug']
-    g.has_header = args['-H']
+    has_header = args['-H']
     if g.debug:
         print(args)
     if args['create']:
         create_table(args['DEFNFILE'])
     elif args['load']:
-        load_table(args['DEFNFILE'], args['CSVFILE'])
+        load_table(args['DEFNFILE'], args['CSVFILE'], has_header)
     else:
         assert False
 
@@ -70,13 +69,16 @@ def create_table(defn_file: str) -> None:
         print_sql_stmt(defn)
 
 
-def load_table(defn_file: str, csv_file: str) -> None:
+def load_table(defn_file: str, csv_file: str, has_header: bool) -> None:
     if g.debug:
         print('load table:', defn_file, csv_file)
+    with open(defn_file, 'r') as f1, open(csv_file, 'r') as f2:
+        defn = parse_defn_file(f1)
+        print_insert_statements(defn, f2, has_header)
 
 
 def parse_defn_file(defn_file: TextIO) -> Defn:
-    defn = Defn('', '', [])
+    defn = Defn('', [''], [])
     cols: list[Col] = []
     for line in defn_file:
         line = line.strip()
@@ -88,7 +90,7 @@ def parse_defn_file(defn_file: TextIO) -> Defn:
         if f[0] == 'table':
             defn.table_name = f[1]
         elif f[0] == 'primary_key':
-            defn.primary_key = f[1]
+            defn.primary_key = f[1:]
         elif f[0] == 'col':
             col = Col()
             col.num = int(f[1])
@@ -106,7 +108,8 @@ def parse_defn_file(defn_file: TextIO) -> Defn:
 
 def print_sql_stmt(defn: Defn) -> None:
     c_str = f'create table {defn.table_name} (\n'
-    key = f',\n  primary key {defn.primary_key}\n'
+    keycols = ', '.join(defn.primary_key)
+    key = f',\n  primary key ({keycols})\n'
     cols = []
     for col in defn.cols:
         s = f'  {col.name} {col._type}'
@@ -114,6 +117,10 @@ def print_sql_stmt(defn: Defn) -> None:
     col_str = ',\n'.join(cols)
     stmt = c_str + col_str + key + ');'
     print(stmt)
+
+
+def print_insert_statements(defn: Defn, f: TextIO, has_header: bool) -> None:
+    pass
 
 
 if __name__ == '__main__':
