@@ -125,7 +125,6 @@ def print_insert_statements(defn: Defn, f: TextIO, has_header: bool) -> None:
     s1 = f'insert into {defn.table_name}\n'
     names = [x.name for x in defn.cols]
     s1 += '(' + ', '.join(names) + ')\nvalues\n'
-    print(s1)
     reader = csv.reader(f)
     for line in reader:
         values = '(' + get_values_list(defn, line) + ');\n'
@@ -141,7 +140,10 @@ def get_values_list(defn: Defn, line: list[str]) -> str:
 
 
 def format_col(col: Col, line: list[str]) -> str:
-    return '(col)'
+    val = line[col.num -1]
+    assert col._type == 'text'
+    assert "'" not in val  # XXX Can't handle embedded ticks
+    return "'" + val + "'"
 
 
 if __name__ == '__main__':

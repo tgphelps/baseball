@@ -1,0 +1,8 @@
+
+# comment
+
+table leagues
+primary_key league_id
+
+col 1 text league_id
+col 2 text league_name
