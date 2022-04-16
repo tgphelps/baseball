@@ -16,8 +16,10 @@ Options:
 """
 
 
+import csv
 from dataclasses import dataclass
 from typing import TextIO
+
 import docopt  # type: ignore
 
 
@@ -120,7 +122,26 @@ def print_sql_stmt(defn: Defn) -> None:
 
 
 def print_insert_statements(defn: Defn, f: TextIO, has_header: bool) -> None:
-    pass
+    s1 = f'insert into {defn.table_name}\n'
+    names = [x.name for x in defn.cols]
+    s1 += '(' + ', '.join(names) + ')\nvalues\n'
+    print(s1)
+    reader = csv.reader(f)
+    for line in reader:
+        values = '(' + get_values_list(defn, line) + ');\n'
+        stmt = s1 + values
+        print(stmt)
+
+
+def get_values_list(defn: Defn, line: list[str]) -> str:
+    vals: list[str] = []
+    for col in defn.cols:
+        vals.append(format_col(col, line))
+    return ', '.join(vals)
+
+
+def format_col(col: Col, line: list[str]) -> str:
+    return '(col)'
 
 
 if __name__ == '__main__':
