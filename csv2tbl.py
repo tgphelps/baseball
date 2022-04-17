@@ -113,6 +113,8 @@ def print_sql_stmt(defn: Defn) -> None:
     keycols = ', '.join(defn.primary_key)
     key = f',\n  primary key ({keycols})\n'
     cols = []
+    if keycols == 'id':   # special case: make an auto-increment column
+        cols.append('  id serial')
     for col in defn.cols:
         s = f'  {col.name} {col._type}'
         cols.append(s)
@@ -140,10 +142,12 @@ def get_values_list(defn: Defn, line: list[str]) -> str:
 
 
 def format_col(col: Col, line: list[str]) -> str:
-    val = line[col.num -1]
-    assert col._type == 'text'
-    assert "'" not in val  # XXX Can't handle embedded ticks
-    return "'" + val + "'"
+    val = line[col.num - 1]
+    if "'" in val:
+        val = val.replace("'", "''")
+    if col._type == 'text':
+        val = "'" + val + "'"
+    return val
 
 
 if __name__ == '__main__':

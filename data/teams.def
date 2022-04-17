@@ -1,0 +1,12 @@
+
+# comment
+
+table teams
+primary_key team_id league_id
+
+col 1 text team_id
+col 2 text league_id
+col 3 text city
+col 4 text nickname
+col 5 smallint first_year
+col 6 smallint last_year

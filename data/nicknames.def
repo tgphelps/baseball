@@ -1,0 +1,17 @@
+
+# comment
+
+table nicknames
+primary_key id
+
+col 1 text current_team_id
+col 2 text team_id
+col 3 text league_id
+col 4 text division
+col 5 text location
+col 6 text nickname
+col 7 text alt_nickname
+col 8 text first_date
+col 9 text last_date
+col 10 text city
+col 11 text state
