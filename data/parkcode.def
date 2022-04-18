@@ -1,0 +1,15 @@
+
+# comment
+
+table parkcodes
+primary_key park_id
+
+col 1 text park_id
+col 2 text name
+col 3 text alt_name
+col 4 text city
+col 5 text state
+col 6 text start_date
+col 7 text end_date
+col 8 text league
+col 9 text notes

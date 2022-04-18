@@ -68,7 +68,7 @@ def create_table(defn_file: str) -> None:
         defn = parse_defn_file(f)
         if g.debug:
             print(defn)
-        print_sql_stmt(defn)
+        print_create_stmt(defn)
 
 
 def load_table(defn_file: str, csv_file: str, has_header: bool) -> None:
@@ -108,12 +108,12 @@ def parse_defn_file(defn_file: TextIO) -> Defn:
     return defn
 
 
-def print_sql_stmt(defn: Defn) -> None:
+def print_create_stmt(defn: Defn) -> None:
     c_str = f'create table {defn.table_name} (\n'
     keycols = ', '.join(defn.primary_key)
     key = f',\n  primary key ({keycols})\n'
     cols = []
-    if keycols == 'id':   # special case: make an auto-increment column
+    if keycols == 'id_serial':   # special case: make an auto-increment column
         cols.append('  id serial')
     for col in defn.cols:
         s = f'  {col.name} {col._type}'
@@ -128,11 +128,22 @@ def print_insert_statements(defn: Defn, f: TextIO, has_header: bool) -> None:
     names = [x.name for x in defn.cols]
     s1 += '(' + ', '.join(names) + ')\nvalues\n'
     reader = csv.reader(f)
-    for line in reader:
+    in_xaction = False
+    for num, line in enumerate(reader):
+        if has_header:
+            has_header = False
+            continue  # skip the first row
         values = '(' + get_values_list(defn, line) + ');\n'
         stmt = s1 + values
+        if not in_xaction:
+            print('begin transaction;')
+            in_xaction = True
         print(stmt)
-
+        if num % 50 == 0:
+            print('commit;')
+            in_xaction = False
+    if in_xaction:
+        print('commit')
 
 def get_values_list(defn: Defn, line: list[str]) -> str:
     vals: list[str] = []

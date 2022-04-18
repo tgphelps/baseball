@@ -1,0 +1,13 @@
+
+# comment
+
+table people
+primary_key id
+
+col 1 text id
+col 2 text last_name
+col 3 text first_name
+col 4 text first_played
+col 5 text first_managed
+col 6 text first_coached
+col 7 text first_umpired

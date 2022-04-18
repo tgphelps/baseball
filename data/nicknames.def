@@ -2,7 +2,7 @@
 # comment
 
 table nicknames
-primary_key id
+primary_key id_serial
 
 col 1 text current_team_id
 col 2 text team_id
