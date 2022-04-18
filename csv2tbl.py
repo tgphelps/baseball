@@ -24,6 +24,7 @@ import docopt  # type: ignore
 
 
 VERSION = 0.01
+COMMIT_INTVL = 50
 
 
 class Globals:
@@ -115,6 +116,7 @@ def print_create_stmt(defn: Defn) -> None:
     cols = []
     if keycols == 'id_serial':   # special case: make an auto-increment column
         cols.append('  id serial')
+        key = f',\n  primary key (id)\n'
     for col in defn.cols:
         s = f'  {col.name} {col._type}'
         cols.append(s)
@@ -139,7 +141,7 @@ def print_insert_statements(defn: Defn, f: TextIO, has_header: bool) -> None:
             print('begin transaction;')
             in_xaction = True
         print(stmt)
-        if num % 50 == 0:
+        if num % COMMIT_INTVL == 0:
             print('commit;')
             in_xaction = False
     if in_xaction:
@@ -158,6 +160,8 @@ def format_col(col: Col, line: list[str]) -> str:
         val = val.replace("'", "''")
     if col._type == 'text':
         val = "'" + val + "'"
+    if col._type in ('smallint', 'integer') and val == '':
+        val = '0'
     return val
 
 
