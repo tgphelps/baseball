@@ -116,7 +116,7 @@ def print_create_stmt(defn: Defn) -> None:
     cols = []
     if keycols == 'id_serial':   # special case: make an auto-increment column
         cols.append('  id serial')
-        key = f',\n  primary key (id)\n'
+        key = ',\n  primary key (id)\n'
     for col in defn.cols:
         s = f'  {col.name} {col._type}'
         cols.append(s)
@@ -146,6 +146,7 @@ def print_insert_statements(defn: Defn, f: TextIO, has_header: bool) -> None:
             in_xaction = False
     if in_xaction:
         print('commit')
+
 
 def get_values_list(defn: Defn, line: list[str]) -> str:
     vals: list[str] = []

@@ -1,6 +1,6 @@
 
 check:
-	flake8
+	-flake8
 	mypy *.py
 
 sql:

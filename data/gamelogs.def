@@ -56,7 +56,7 @@ col 44 smallint v_putouts
 col 45 smallint v_assists
 col 46 smallint v_errors
 col 47 smallint v_passed_balls
-col 48 smallint v_couble_plays
+col 48 smallint v_double_plays
 col 49 smallint v_triple_plays
 
 col 50 smallint h_at_bats
@@ -87,7 +87,7 @@ col 72 smallint h_putouts
 col 73 smallint h_assists
 col 74 smallint h_errors
 col 75 smallint h_passed_balls
-col 76 smallint h_couble_plays
+col 76 smallint h_double_plays
 col 77 smallint h_triple_plays
 
 # col 78 text
