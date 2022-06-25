@@ -1,14 +1,18 @@
+#!/bin/env python
 
 """
-analyze_runs.py: Shows run production stats
+analyze_games.py: Run analysis over all games
 
 Usage:
-    analyze_runs.py [--innings-by-runs]
+    analyze_games.py <analysis>
 
 Options:
     -h  --help         Show this screen.
     --version          Show version.
-    --innings-by-runs  Show in how many innings teams scored N runs
+
+<analysis> can be one of:
+    count-games         Count games in database
+    innings-by-runs     Show how often N runs occur in an inning
 """
 
 from collections import defaultdict
@@ -36,32 +40,29 @@ def main():
     with psycopg2.connect(conn_string) as conn:
         with conn.cursor() as cur:
             # print("connected")
-            print_reports(args, cur)
+            # print(args)
+            s = args['<analysis>']
+            if s == 'count-games':
+                count_games(cur)
+            elif s == 'innings-by-runs':
+                innings_by_runs(cur)
+            else:
+                print('ERROR: bad analysis specified')
 
-    print("connection closed")
+
+def count_games(cur: psycopg2.extensions.cursor) -> None:
+    cur.execute('select count(*) from gamelogs')
+    n = cur.fetchone()[0]
+    print(f'Total games played: {n}')
 
 
-def print_reports(args: dict[str, str],
-                  cur: psycopg2.extensions.cursor) -> None:
-    if args['--innings-by-runs']:
-        print_innings_by_runs(cur)
-
-
-def print_innings_by_runs(cur: psycopg2.extensions.cursor) -> None:
+def innings_by_runs(cur: psycopg2.extensions.cursor) -> None:
     cur.execute("select v_line_score, h_line_score from gamelogs")
     for row in cur:
-        do_line_score(util.line_score_to_ints(row[0]))
-        do_line_score(util.line_score_to_ints(row[1]))
-    print_run_stats()  # XXX
-
-
-def do_line_score(inning: list[int]) -> None:
-    # print('do', inning)
-    for i in inning:
-        g.runs[i] += 1
-
-
-def print_run_stats() -> None:
+        for i in util.line_score_to_ints(row[0]):
+            g.runs[i] += 1
+        for i in util.line_score_to_ints(row[1]):
+            g.runs[i] += 1
     total = sum([g.runs[i] for i in g.runs])
     print('Total:', total)
     for r in sorted(g.runs.keys()):
