@@ -12,8 +12,9 @@ Options:
 
 <analysis> can be one of:
     count-games         Count games in database.
-    innings-by-runs     Show how often N runs occur in an inning.
+    run-clumpiness      Show how often N runs occur in an inning.
     home-advantage      Show percentage of games home team won.
+    runs-by-inning      Show how many runs occur in inning N.
 """
 
 from collections import defaultdict
@@ -45,10 +46,12 @@ def main():
             s = args['<analysis>']
             if s == 'count-games':
                 count_games(cur)
-            elif s == 'innings-by-runs':
-                innings_by_runs(cur)
+            elif s == 'run-clumpiness':
+                run_clumpiness(cur)
             elif s == 'home-advantage':
                 home_advantage(cur)
+            elif s == 'runs-by-inning':
+                runs_by_inning(cur)
             else:
                 print('ERROR: bad analysis specified')
 
@@ -60,7 +63,7 @@ def count_games(cur: psycopg2.extensions.cursor) -> None:
     print(f'Total games played: {n}')
 
 
-def innings_by_runs(cur: psycopg2.extensions.cursor) -> None:
+def run_clumpiness(cur: psycopg2.extensions.cursor) -> None:
     "Show distribution of runs scored in an inning."
     runs: defaultdict[int, int] = defaultdict(lambda: 0)
     cur.execute("select v_line_score, h_line_score from gamelogs")
@@ -74,6 +77,28 @@ def innings_by_runs(cur: psycopg2.extensions.cursor) -> None:
     for r in sorted(runs.keys()):
         pct = float(runs[r]) / total * 100.0
         print(r, '->', runs[r], f'{pct:4.2f}%')
+
+
+def runs_by_inning(cur: psycopg2.extensions.cursor) -> None:
+    runs: defaultdict[int, tuple[int, int]] = defaultdict(lambda: (0, 0))
+    # runs[n] = (count, runs_scored)
+    cur.execute("select v_line_score, h_line_score from gamelogs")
+    for row in cur:
+        print(row[0])
+        print(row[1])
+        for i, scored in enumerate(util.line_score_to_ints(row[0])):
+            inning = i + 1
+            count, total = runs[inning]
+            runs[inning] = (count + 1, total + scored)
+        for i, scored in enumerate(util.line_score_to_ints(row[1])):
+            inning = i + 1
+            count, total = runs[inning]
+            runs[inning] = (count + 1, total + scored)
+        # break
+    for key in runs:
+        n = runs[key][0]
+        r = runs[key][1]
+        print(key, runs[key], f'  {r / n: 4.2f}')
 
 
 def home_advantage(cur: psycopg2.extensions.cursor) -> None:
