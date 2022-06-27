@@ -15,6 +15,7 @@ Options:
     run-clumpiness      Show how often N runs occur in an inning.
     home-advantage      Show percentage of games home team won.
     runs-by-inning      Show how many runs occur in inning N.
+    chance-of-winning   Probability of winning, given a N run lead after M innings.
 """
 
 from collections import defaultdict
@@ -52,6 +53,8 @@ def main():
                 home_advantage(cur)
             elif s == 'runs-by-inning':
                 runs_by_inning(cur)
+            elif s == 'odds-of-winning':
+                odds_of_winning(cur)
             else:
                 print('ERROR: bad analysis specified')
 
@@ -115,6 +118,25 @@ def home_advantage(cur: psycopg2.extensions.cursor) -> None:
             home_wins += 1
     pct = float(home_wins) / games * 100.0
     print(f'Home winning percentage: {pct:4.2f}')
+
+
+def odds_of_winning(cur: psycopg2.extensions.cursor) -> None:
+    """Show probability of winning the game...
+    
+    For every combination of inning, from 1 to 8, and the number of runs
+    one team is ahead of the other, show the probability that that margin
+    led to a win. We consider only games that went at least 9 innings.
+    """
+    cur.execute("select v_line_score, h_line_score, v_score, h_score from gamelogs")
+    total = 0
+    for n, row in enumerate(cur):
+        v_line_score = util.line_score_to_ints(row[0])
+        h_line_score = util.line_score_to_ints(row[1])
+        home_team_won = row[3] > row[2]
+        if len(v_line_score) < 9:
+            continue
+        total += 1
+        print(n, total, home_team_won)
 
 
 if __name__ == '__main__':

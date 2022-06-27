@@ -9,7 +9,7 @@ def line_score_to_ints(s: str) -> list[int]:
     runs. In that case, the inning is represented as "(nn)", where 'nn'
     is the number of runs scored.
     Example: 000320(12)10 (They scored 12 in the 7th.)
-    The string will end with 'x' if the home team didn not bat in the 9th.
+    The string will end with 'x' if the home team did not bat in the 9th.
 
     Convert this string into a list of integers, one for each inning.
     Remove that 'x' before converting.
