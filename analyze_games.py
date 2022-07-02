@@ -160,6 +160,12 @@ def odds_of_winning(cur: psycopg2.extensions.cursor) -> None:
                     assert 'cannot happen'
                 print(f'data[({inning}, {lead}) =', data[(inning, lead)])
 
+    print('RESULTS:')
+    for key in data:
+        games = data[key][0]
+        wins = data[key][1]
+        print(f'data[{key}: {games} {wins} {(wins / games * 100):4.2f}')
+
 
 if __name__ == '__main__':
     main()
