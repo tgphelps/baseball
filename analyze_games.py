@@ -15,7 +15,7 @@ Options:
     run-clumpiness      Show how often N runs occur in an inning.
     home-advantage      Show percentage of games home team won.
     runs-by-inning      Show how many runs occur in inning N.
-    chance-of-winning   Probability of winning, given a N run lead after M innings.
+    odds-of-winning     Probability of winning, given a N run lead after M innings.
 """
 
 from collections import defaultdict
@@ -122,21 +122,43 @@ def home_advantage(cur: psycopg2.extensions.cursor) -> None:
 
 def odds_of_winning(cur: psycopg2.extensions.cursor) -> None:
     """Show probability of winning the game...
-    
+
     For every combination of inning, from 1 to 8, and the number of runs
     one team is ahead of the other, show the probability that that margin
     led to a win. We consider only games that went at least 9 innings.
     """
-    cur.execute("select v_line_score, h_line_score, v_score, h_score from gamelogs")
+    data: defaultdict[tuple[int, int], list[int]] = defaultdict(lambda: [0, 0])
+    # data[(inning, lead)] = [games, wins]
+    cur.execute("select v_line_score, h_line_score, v_score, h_score "
+                "from gamelogs")
     total = 0
     for n, row in enumerate(cur):
         v_line_score = util.line_score_to_ints(row[0])
         h_line_score = util.line_score_to_ints(row[1])
-        home_team_won = row[3] > row[2]
+        print('vis. line:', v_line_score)
+        print('home line:', h_line_score)
         if len(v_line_score) < 9:
             continue
-        total += 1
-        print(n, total, home_team_won)
+        # This game went 9+ innings.
+        home_team_won = row[3] > row[2]
+        visiting_team_won = not home_team_won
+        v_score = 0
+        h_score = 0
+        for i in range(8):
+            inning = i+1
+            v_score += v_line_score[i]
+            h_score += h_line_score[i]
+            print(f'inning: {inning}  score: {v_score} {h_score}')
+            lead = abs(v_score - h_score)
+            if lead > 0:
+                data[(inning, lead)][0] += 1
+                if v_score > h_score and visiting_team_won:
+                    data[(inning, lead)][1] += 1
+                elif h_score > v_score and home_team_won:
+                    data[(inning, lead)][1] += 1
+                else:
+                    assert 'cannot happen'
+                print(f'data[({inning}, {lead}) =', data[(inning, lead)])
 
 
 if __name__ == '__main__':
