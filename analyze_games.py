@@ -131,12 +131,12 @@ def odds_of_winning(cur: psycopg2.extensions.cursor) -> None:
     # data[(inning, lead)] = [games, wins]
     cur.execute("select v_line_score, h_line_score, v_score, h_score "
                 "from gamelogs")
-    total = 0
+    # total = 0
     for n, row in enumerate(cur):
         v_line_score = util.line_score_to_ints(row[0])
         h_line_score = util.line_score_to_ints(row[1])
-        print('vis. line:', v_line_score)
-        print('home line:', h_line_score)
+        # print('vis. line:', v_line_score)
+        # print('home line:', h_line_score)
         if len(v_line_score) < 9:
             continue
         # This game went 9+ innings.
@@ -148,7 +148,7 @@ def odds_of_winning(cur: psycopg2.extensions.cursor) -> None:
             inning = i+1
             v_score += v_line_score[i]
             h_score += h_line_score[i]
-            print(f'inning: {inning}  score: {v_score} {h_score}')
+            # print(f'inning: {inning}  score: {v_score} {h_score}')
             lead = abs(v_score - h_score)
             if lead > 0:
                 data[(inning, lead)][0] += 1
@@ -156,15 +156,21 @@ def odds_of_winning(cur: psycopg2.extensions.cursor) -> None:
                     data[(inning, lead)][1] += 1
                 elif h_score > v_score and home_team_won:
                     data[(inning, lead)][1] += 1
-                else:
-                    assert 'cannot happen'
-                print(f'data[({inning}, {lead}) =', data[(inning, lead)])
+                # else:
+                    # print(f'v_score: {v_score} h_score: {h_score} home_team_won: {home_team_won}')
+                    # assert False
+                # print(f'data[({inning}, {lead}) =', data[(inning, lead)])
 
     print('RESULTS:')
-    for key in data:
-        games = data[key][0]
-        wins = data[key][1]
-        print(f'data[{key}: {games} {wins} {(wins / games * 100):4.2f}')
+    print('lead:       1    2    3    4    5   6   7   8   9  10')
+    print('-----------------------------------------------------')
+    for inning in range(1, 9):
+        print(f'inn. {inning}:   ', end='')
+        for lead in range(1, 10):
+            games = data[inning, lead][0]
+            wins = data[inning, lead][1]
+            print(f'{(wins / games * 100):3.0f}% ', end='')
+        print()
 
 
 if __name__ == '__main__':
